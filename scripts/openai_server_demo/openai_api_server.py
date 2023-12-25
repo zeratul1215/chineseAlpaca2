@@ -119,7 +119,7 @@ TEMPLATE_WITHOUT_SYSTEM_PROMPT = "[INST] {instruction} [/INST]"
 
 
 def generate_prompt(
-    instruction, response="", with_system_prompt=True, system_prompt=None
+    instruction, system_prompt=None, response="", with_system_prompt=True
 ):
     if with_system_prompt is True:
         if system_prompt is None:
@@ -136,7 +136,7 @@ def generate_prompt(
 
 def generate_completion_prompt(instruction: str,system_prompt:str):
     """Generate prompt for completion"""
-    return generate_prompt(instruction, response="", with_system_prompt=True,system_prompt)
+    return generate_prompt(instruction,system_prompt, response="", with_system_prompt=True)
 
 
 def generate_chat_prompt(messages: list):
