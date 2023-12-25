@@ -16,6 +16,7 @@ parser.add_argument('--load_in_8bit',action='store_true', help='Load the model i
 parser.add_argument('--load_in_4bit',action='store_true', help='Load the model in 4bit mode')
 parser.add_argument('--only_cpu',action='store_true',help='Only use CPU for inference')
 parser.add_argument('--alpha',type=str,default="1.0", help="The scaling factor of NTK method, can be a float or 'auto'. ")
+parser.add_argument('--port',type=int,default=5000)
 args = parser.parse_args()
 if args.only_cpu is True:
     args.gpus = ""
@@ -133,9 +134,9 @@ def generate_prompt(
     return prompt
 
 
-def generate_completion_prompt(instruction: str):
+def generate_completion_prompt(instruction: str,system_prompt:str):
     """Generate prompt for completion"""
-    return generate_prompt(instruction, response="", with_system_prompt=True)
+    return generate_prompt(instruction, response="", with_system_prompt=True,system_prompt)
 
 
 def generate_chat_prompt(messages: list):
@@ -165,6 +166,7 @@ def generate_chat_prompt(messages: list):
 
 def predict(
     input,
+    system_prompt=None,
     max_new_tokens=128,
     top_p=0.9,
     temperature=0.2,
@@ -180,7 +182,7 @@ def predict(
     type(input) == list -> /v1/chat/completions
     """
     if isinstance(input, str):
-        prompt = generate_completion_prompt(input)
+        prompt = generate_completion_prompt(input,system_prompt)
     else:
         prompt = generate_chat_prompt(input)
     inputs = tokenizer(prompt, return_tensors="pt")
@@ -348,6 +350,7 @@ async def create_completion(request: CompletionRequest):
     """Creates a completion"""
     output = predict(
         input=request.prompt,
+        system_prompt = request.system_prompt,
         max_new_tokens=request.max_tokens,
         top_p=request.top_p,
         top_k=request.top_k,
@@ -376,4 +379,4 @@ if __name__ == "__main__":
     log_config["formatters"]["default"][
         "fmt"
     ] = "%(asctime)s - %(levelname)s - %(message)s"
-    uvicorn.run(app, host="0.0.0.0", port=19327, workers=1, log_config=log_config)
+    uvicorn.run(app, host="0.0.0.0", port=args.port, workers=1, log_config=log_config)

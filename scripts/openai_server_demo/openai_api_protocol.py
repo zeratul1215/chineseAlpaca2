@@ -66,6 +66,7 @@ class EmbeddingsResponse(BaseModel):
 
 class CompletionRequest(BaseModel):
     prompt: Union[str, List[Any]]
+    system_prompt: str
     temperature: Optional[float] = 0.2
     n: Optional[int] = 1
     max_tokens: Optional[int] = 512
